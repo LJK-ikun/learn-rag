@@ -1,0 +1,24 @@
+# RAG 知识库 Agent —— 依赖清单
+#
+# 注意：本项目必须用 .venv 里的解释器跑，不要用全局 py：
+#   .venv/Scripts/python.exe main.py
+# 原因：本机 `py -3.13` 指向的 D:\python.exe 没有 pip、import site 还会报错，
+#       只能跑纯标准库脚本（比如 01_chunking.py）。
+
+# ---- 核心：LangChain 全家桶 ----
+langchain>=1.4          # 顶层包（提供 agents.create_agent）
+langchain-core>=1.6     # Document / VectorStore / Runnable 这些基础抽象
+langchain-openai>=1.6   # 提供 OpenAIEmbeddings —— 我们借它连阿里 DashScope 的兼容模式
+langchain-deepseek>=1.1 # 提供 ChatDeepSeek —— 对话这一侧用它
+langchain-text-splitters>=1.0  # 备用的通用切分器（主用我们手写的 structure_split）
+
+# ---- 向量计算 ----
+# langchain_core 的 InMemoryVectorStore 内部依赖 numpy；M5 手写余弦也要用它
+numpy>=2.0
+
+# ---- 配置 ----
+python-dotenv>=1.2      # 从 .env 读 key
+
+# ---- M5 再开：持久化向量库（约 50MB，先不装）----
+# langchain-chroma>=0.2
+# chromadb>=1.0
