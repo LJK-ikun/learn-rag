@@ -1,36 +1,50 @@
 # -*- coding: utf-8 -*-
 """
-这个文件干什么：命令行入口。问一个问题，打印带出处的答案。
+这个文件干什么：命令行入口。交互式循环 —— 启动一次，反复问，agent 记得住上下文。
 
-    ./.venv/Scripts/python.exe main.py "向量库怎么选型"
+    ./.venv/Scripts/python.exe main.py
+
+输入 exit / quit 退出。
+
+【为什么要改成循环】
+"多轮对话记忆"这个能力必须在同一个进程里、连续问多次才能被观察到 ——
+之前"传一个参数、跑一次就退出"的模式，每次都是全新进程，agent.py 里的
+checkpointer 存的历史活不过一次调用，根本没机会体现"记住了上一轮"。
 """
 from __future__ import annotations
 
 import sys
-import chain
+import uuid
+
+import agent as agent_module
 import chunker
 import loader
-from store import build_store
+from store import load_or_build_store
 
-def main(question: str) -> None:
-    # 1 建索引
+
+def main() -> None:
+    # 1 建索引（指纹没变就直接读盘，不重新向量化 —— 见 store.load_or_build_store）
     chunks = chunker.chunk_documents(loader.load_documents())
-    print(f"\n[main] {len(chunks)} 个块， 建索引中（调 API， 请稍等）...")
-    store = build_store(chunks)
+    store = load_or_build_store(chunks)
 
-    # 2 问答
-    print(f"\n问题：{question}\n")
-    answer, hits =chain.ask(question, store)
-    print(answer)
+    # 2 建 agent（带 checkpointer，能记住这个进程里发生过的对话）
+    a = agent_module.build_agent(store)
 
-    # 3 出处
-    if hits:
-        print("\n" + "─" * 60)
-        print("引用来源：")
-        for i, (doc, score) in enumerate(hits, 1):
-            meta = doc.metadata
-            print(f"  [{i}] {meta.get('source', '?')}  >  {meta.get('title_path', '')}")
-            print(f"      相关度 {score:.4f}")
+    # 3 这个进程里所有轮次共用同一个 thread_id —— 这就是"记忆"生效的关键。
+    #   换一个 thread_id 就等于开了个新会话，跟这边历史互不干扰。
+    thread_id = uuid.uuid4().hex
+    print(f"\n知识库问答（会话 {thread_id[:8]}，输入 exit/quit 退出）\n")
+
+    while True:
+        question = input("你: ").strip()
+        if question.lower() in ("exit", "quit"):
+            break
+        if not question:
+            continue
+
+        answer = agent_module.ask(a, question, thread_id)
+        print(f"\n{answer}\n")
+
 
 if __name__ == "__main__":
     import io
@@ -40,6 +54,8 @@ if __name__ == "__main__":
     sys.stdout = io.TextIOWrapper(
         sys.stdout.buffer, encoding="utf-8", errors="replace"
     )
+    sys.stdin = io.TextIOWrapper(
+        sys.stdin.buffer, encoding="utf-8", errors="replace"
+    )
 
-    q = " ".join(sys.argv[1:]).strip() or "向量库怎么选型"
-    main(q)
+    main()
