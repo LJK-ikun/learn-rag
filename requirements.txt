@@ -10,7 +10,8 @@ langchain>=1.4          # 顶层包（提供 agents.create_agent）
 langchain-core>=1.6     # Document / VectorStore / Runnable 这些基础抽象
 langchain-openai>=1.6   # 提供 OpenAIEmbeddings —— 我们借它连阿里 DashScope 的兼容模式
 langchain-deepseek>=1.1 # 提供 ChatDeepSeek —— 对话这一侧用它
-langchain-text-splitters>=1.0  # 备用的通用切分器（主用我们手写的 structure_split）
+langchain-text-splitters>=1.0  # langchain 自身的依赖，会被带着装上；我们没用它
+                               # （切分是手写的 chunker.split_by_heading）
 
 # ---- 向量计算 ----
 # langchain_core 的 InMemoryVectorStore 内部依赖 numpy；M5 手写余弦也要用它

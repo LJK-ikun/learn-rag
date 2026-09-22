@@ -83,7 +83,12 @@ EMBEDDING_DIM: int | None = int(_dim) if _dim else None
 # 4. 对话（Chat）配置
 # ============================================================
 CHAT_API_KEY = env("DEEPSEEK_API_KEY")
-CHAT_BASE_URL = env("CHAT_BASE_URL", "https://api.deepseek.com")
+CHAT_BASE_URL = env("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+# ↑ 读的是 DEEPSEEK_BASE_URL，跟 .env 里保持一致。
+#   命名规律：key 和 base_url 用**服务名**（DASHSCOPE_* / DEEPSEEK_*），
+#   model 用**角色名**（EMBEDDING_MODEL / CHAT_MODEL）。
+#   这里曾经写成 env("CHAT_BASE_URL")，跟 .env 对不上 —— 因为默认值恰好是对的，
+#   程序照常工作、不报任何错，属于"改了 .env 却不生效"的静默坑。
 CHAT_MODEL = env("CHAT_MODEL", "deepseek-v4-flash")
 # ↑ 注意这里和上面是**两家不同的服务**：向量化走阿里、对话走 DeepSeek。
 #   这不是将就，是常态 —— DeepSeek 压根没有 /embeddings 接口。

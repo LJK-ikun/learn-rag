@@ -19,7 +19,6 @@
 
 记住这条：**metadata 里写的字，检索时是"看不见"的。**
 想让一段信息能被搜到，必须写进 page_content。
-（这就是 chunker.py 要把标题路径拼进正文、而不是塞进 metadata 的原因。）
 
 【为什么不用 LangChain 的 DocumentLoader】
 langchain_community 没装（为这点功能装一个几百 MB 的包不值得），
@@ -87,42 +86,4 @@ def load_documents(directory: Path | None = None) -> list[Document]:
     print(f"[loader] 从 {directory or config.INTERVIEW_DIR} 读了 {len(docs)} 个文件")
     # ↑ 打一行日志。为什么用 print 而不是 logging：这是个学习项目，
     #   print 的输出直接可见，不用配 handler。真要上生产再换。
-    return docs                             # 交给调用方（chunker 或 __main__）
-
-
-# ============================================================
-# 直接运行本文件时：看看读到了什么
-# ============================================================
-if __name__ == "__main__":                  # 只有"直接运行本文件"才执行，被 import 时不跑
-    import io                               # io：要拿 sys.stdout.buffer 那个原始字节流
-    import sys                              # sys：要替换 stdout
-
-    # Windows 控制台默认按 GBK 解码，直接 print 中文会乱码。
-    # 把 stdout 换成一个强制 utf-8 的包装层（这招你在 01_chunking.py 里用过）。
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    # ↑ sys.stdout.buffer 是底层的"原始字节流"，绕过 Python 已有的编码层；
-    #   外面重新套一层 TextIOWrapper，指定成 utf-8，中文就不乱了。
-
-    print(config.describe())                # 先打配置。排查"我到底连的哪个模型"时，这行能省半小时
-    print()                                 # 空行分隔
-
-    docs = load_documents()                 # 真的去读那 20 个文件
-    print(f"\n总字符数：{sum(len(d.page_content) for d in docs):,}")
-    # ↑ sum(... for ...) 是生成器表达式，不会先造一个中间列表，省内存。
-    #   {:,} 里的逗号是千分位分隔符，450432 会显示成 450,432，一眼看得出量级。
-
-    print("\n前 5 个文件：")                  # 抽样看 5 个，确认读对了
-    for d in docs[:5]:                       # docs[:5] 是切片：取前 5 个
-        first_line = d.page_content.splitlines()[0] if d.page_content else ""
-        # ↑ 这是你选中问的那一行，拆开看：
-        #   d               —— 循环变量，当前这个 Document
-        #   d.page_content  —— 那篇 md 的**全文**，是一个字符串
-        #   .splitlines()   —— 按换行符切成一个列表，["# ch01-02 ...", "正文...", "", ...]
-        #   [0]             —— 取第 0 个，也就是第一行（md 的 H1 标题）
-        #   if ... else ""  —— 防御：万一文件是空的，splitlines() 返回空列表，
-        #                      直接 [0] 会 IndexError，所以空文件时退化成空字符串
-        print(f"  {d.metadata['source']:<34} {len(d.page_content):>7,} 字符   {first_line[:30]}")
-        # ↑ 这一行有四个格式化技巧：
-        #   {'source':<34}   —— 左对齐，占满 34 格，文件名长短不一也能排整齐
-        #   {len(...):>7,}   —— 右对齐占 7 格 + 千分位逗号，数字按个位对齐，一眼看出谁大谁小
-        #   {first_line[:30]} —— 只取前 30 个字符，标题太长不撑爆屏幕
+    return docs                             # 交给调用方（chunker / store）
