@@ -41,10 +41,18 @@ FINGERPRINT_FILE = "fingerprint.txt"
 
 
 def compute_fingerprint(chunks: list[Document]) -> str:
-    """给一批 chunk 算一个指纹（内容哈希）。内容一样，指纹必然一样。"""
+    """给一批 chunk 算一个指纹（内容哈希）。内容一样，指纹必然一样。
+
+    指纹覆盖：chunk 内容 + embedding 模型名 + 维度。
+    换模型必然触发重建，防止"旧向量 + 新查询向量"混用的静默 bug。
+    """
     hasher = hashlib.sha256()
-    # 先按 (source, title_path) 排序，保证哈希结果不受列表顺序影响 ——
-    # 万一以后 loader/chunker 换成并发处理，产出顺序就不一定稳定了。
+
+    # 先哈希模型配置 —— 换模型后即使语料不变，指纹也必然不同
+    hasher.update(config.EMBEDDING_MODEL.encode("utf-8"))
+    hasher.update(str(config.EMBEDDING_DIM or "default").encode("utf-8"))
+
+    # 再哈希 chunk 内容（按 (source, title_path) 排序，保证顺序稳定）
     ordered = sorted(
         chunks, key=lambda d: (d.metadata["source"], d.metadata["title_path"])
     )
