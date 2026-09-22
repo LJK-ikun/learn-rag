@@ -14,3 +14,7 @@ __pycache__/
 
 # 编辑器插件产生的会话日志，不是项目内容
 .deep-copilot/
+
+# 调试日志
+*.log
+debug.log
