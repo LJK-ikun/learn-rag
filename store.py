@@ -29,6 +29,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import pickle
 
 from langchain_chroma import Chroma
@@ -39,7 +40,8 @@ import config
 from embedder import get_embeddings
 
 
-FINGERPRINT_FILE = "fingerprint.txt"
+FINGERPRINT_FILE = "fingerprint.txt"  # 旧版总指纹（保留兼容）
+FILE_FINGERPRINTS_FILE = "file_fingerprints.json"  # 新版：每个文件一个指纹
 BM25_INDEX_FILE = "bm25.pkl"  # BM25 索引序列化文件
 
 
@@ -122,6 +124,78 @@ def _write_fingerprint(fingerprint: str) -> None:
     (config.INDEX_DIR / FINGERPRINT_FILE).write_text(fingerprint, encoding="utf-8")
 
 
+# ============================================================
+# 文件级指纹管理（增量更新）
+# ============================================================
+
+# 把所有chunk按metadata["source"]分组，每个文件算一个独立的 SHA256哈希
+# 哈希内容包括：模型名称 + 该文件所有chunk内容
+def compute_file_fingerprints(chunks: list[Document]) -> dict[str, str]:
+    """给每个文件算一个指纹（按文件分组）。
+
+    返回：{"12-补充-检索与RAG.md": "a3f2e1...", ...}
+    """
+    # 先按文件分组
+    file_to_chunks: dict[str, list[Document]] = {}
+    for doc in chunks:
+        source = doc.metadata["source"]
+        if source not in file_to_chunks:
+            file_to_chunks[source] = []
+        file_to_chunks[source].append(doc)
+
+    # 每个文件算一个指纹
+    fingerprints = {}
+    for source, file_chunks in file_to_chunks.items():
+        hasher = hashlib.sha256()
+        # 哈希模型配置
+        hasher.update(config.EMBEDDING_MODEL.encode("utf-8"))
+        hasher.update(str(config.EMBEDDING_DIM or "default").encode("utf-8"))
+        # 哈希该文件的所有 chunk 内容（按 title_path 排序保证顺序稳定）
+        ordered = sorted(file_chunks, key=lambda d: d.metadata["title_path"])
+        for doc in ordered:
+            hasher.update(doc.metadata["title_path"].encode("utf-8"))
+            hasher.update(doc.page_content.encode("utf-8"))
+        fingerprints[source] = hasher.hexdigest()
+
+    return fingerprints
+
+
+def _load_file_fingerprints() -> dict[str, str]:
+    """读取保存的文件指纹。不存在返回空字典。"""
+    path = config.INDEX_DIR / FILE_FINGERPRINTS_FILE
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _save_file_fingerprints(fingerprints: dict[str, str]) -> None:
+    """保存文件指纹到磁盘。"""
+    config.INDEX_DIR.mkdir(parents=True, exist_ok=True)
+    path = config.INDEX_DIR / FILE_FINGERPRINTS_FILE
+    path.write_text(json.dumps(fingerprints, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def detect_changes(
+    old_fingerprints: dict[str, str],
+    new_fingerprints: dict[str, str],
+) -> tuple[list[str], list[str], list[str]]:
+    """对比新旧指纹，找出变化的文件。
+
+    返回：(新增的文件, 修改的文件, 删除的文件)
+    """
+    old_files = set(old_fingerprints.keys())
+    new_files = set(new_fingerprints.keys())
+
+    added = list(new_files - old_files)
+    deleted = list(old_files - new_files)
+    modified = [
+        f for f in (old_files & new_files)
+        if old_fingerprints[f] != new_fingerprints[f]
+    ]
+
+    return added, modified, deleted
+
+
 def build_store(chunks: list[Document], fingerprint: str) -> tuple[Chroma, BM25Okapi]:
     """全量重建：把 chunks 向量化 + 建 BM25 索引，都落盘，并记录指纹。"""
     # 1. 向量库
@@ -153,12 +227,118 @@ def load_existing_store(chunks: list[Document]) -> tuple[Chroma, BM25Okapi]:
     #   加载索引本身完全不联网。
 
 
+# 增量更新函数
+# 删除变化文件的旧 chunk
+# 添加变化文件的新chunk (只向量化这些)
+# BM25全量重建（因为BM25不支持增量，但很快）
+def incremental_update(
+    vector_store: Chroma,
+    all_chunks: list[Document],
+    changed_files: list[str],
+) -> tuple[Chroma, BM25Okapi]:
+    """增量更新：只处理变化的文件，其他保持不变。
+
+    参数：
+        vector_store: 已有的向量库
+        all_chunks: 当前所有的 chunk（包括变化的和未变的）
+        changed_files: 需要更新的文件列表（新增 + 修改）
+
+    返回：
+        (更新后的向量库, 重建的BM25索引)
+    """
+    print(f"[增量更新] 检测到 {len(changed_files)} 个文件变化，开始增量更新...")
+
+    # 1. 删除变化文件的旧 chunk（如果存在）
+    for source in changed_files:
+        # Chroma 用 metadata 过滤删除
+        try:
+            vector_store.delete(where={"source": source})
+            print(f"  - 删除旧数据: {source}")
+        except Exception as e:
+            # 新增的文件没有旧数据，删除会失败，忽略即可
+            print(f"  - 跳过删除（文件可能是新增）: {source}")
+
+    # 2. 添加变化文件的新 chunk
+    new_chunks = [doc for doc in all_chunks if doc.metadata["source"] in changed_files]
+    if new_chunks:
+        print(f"  - 向量化新数据: {len(new_chunks)} 个 chunk")
+        vector_store.add_documents(new_chunks)
+
+    # 3. BM25 全量重建（用所有 chunk，很快）
+    print(f"  - 重建 BM25 索引（全量，共 {len(all_chunks)} 个 chunk）")
+    bm25 = _build_bm25_index(all_chunks)
+    _save_bm25_index(bm25)
+
+    return vector_store, bm25
+
+
 def load_or_build_store(chunks: list[Document]) -> tuple[Chroma, BM25Okapi]:
-    """入口函数：指纹一致就读盘，不一致就重建。返回 (向量库, BM25索引)。"""
-    fingerprint = compute_fingerprint(chunks)
-    if _read_saved_fingerprint() == fingerprint:
+    """入口函数：智能判断是否需要增量更新或全量重建。
+
+    策略：
+    1. 如果索引不存在 → 全量构建
+    2. 如果索引存在：
+       - 计算文件级指纹
+       - 有变化 → 增量更新
+       - 无变化 → 直接加载
+    """
+    # 检查索引是否存在
+    index_exists = (config.INDEX_DIR / "chroma.sqlite3").exists()
+
+    if not index_exists:
+        # 首次构建
+        print("[store] 首次构建索引（向量库 + BM25）...")
+        fingerprint = compute_fingerprint(chunks)
+        vector_store, bm25 = build_store(chunks, fingerprint)
+        # 保存文件级指纹
+        file_fps = compute_file_fingerprints(chunks)
+        _save_file_fingerprints(file_fps)
+        return vector_store, bm25
+
+    # 索引已存在，检查文件级变化
+    old_file_fps = _load_file_fingerprints()
+    new_file_fps = compute_file_fingerprints(chunks)
+
+    added, modified, deleted = detect_changes(old_file_fps, new_file_fps)
+    changed_files = added + modified
+
+    if not changed_files and not deleted:
+        # 完全没变化
         print("[store] 语料指纹未变，直接加载已有索引（向量库 + BM25）")
         return load_existing_store(chunks)
+
+    # 有变化，执行增量更新
+    print(f"[store] 检测到变化: 新增 {len(added)} 个, 修改 {len(modified)} 个, 删除 {len(deleted)} 个文件")
+
+    # 加载已有索引
+    vector_store = Chroma(
+        embedding_function=get_embeddings(),
+        persist_directory=str(config.INDEX_DIR),
+    )
+
+    # 处理删除的文件
+    for source in deleted:
+        try:
+            vector_store.delete(where={"source": source})
+            print(f"  - 删除文件: {source}")
+        except Exception as e:
+            print(f"  - 删除失败（可能已不存在）: {source}")
+
+    # 增量更新变化的文件
+    if changed_files:
+        vector_store, bm25 = incremental_update(vector_store, chunks, changed_files)
+    else:
+        # 只有删除，没有新增/修改，只需重建 BM25
+        bm25 = _build_bm25_index(chunks)
+        _save_bm25_index(bm25)
+
+    # 更新文件指纹
+    _save_file_fingerprints(new_file_fps)
+    # 更新总指纹（兼容旧逻辑）
+    fingerprint = compute_fingerprint(chunks)
+    _write_fingerprint(fingerprint)
+
+    return vector_store, bm25
 
     print("[store] 语料指纹变化（或首次建索引），重新构建中（向量化 + BM25，请稍等）...")
     return build_store(chunks, fingerprint)
