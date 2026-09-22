@@ -22,7 +22,7 @@ import config
 from store import search
 
 
-def build_tools(store, sources: list[str]) -> list:
+def build_tools(vector_store, bm25, chunks, sources: list[str]) -> list:
     """造出这个 agent 能用的全部工具。"""
 
     @tool
@@ -39,7 +39,7 @@ def build_tools(store, sources: list[str]) -> list:
                 也可以改写成更容易命中的说法 —— 比如用户问
                 "那个图结构的东西快不快"，改写成 "HNSW 查询性能 复杂度"。
         """
-        hits = search(store, query, k=config.TOP_K)
+        hits = search(vector_store, bm25, chunks, query, k=config.TOP_K)
         if not hits:
             return "没有检索到相关内容。"
         return "\n\n".join(doc.page_content for doc, _ in hits)

@@ -24,3 +24,9 @@ python-dotenv>=1.2      # 从 .env 读 key
 # ---- 持久化向量库（约 50MB）----
 langchain-chroma>=0.2   # 提供 Chroma —— 向量+metadata 落盘到本地 sqlite
 chromadb>=1.0           # langchain-chroma 的底层依赖
+
+# ---- 混合检索：BM25 关键词检索 ----
+rank-bm25>=0.2          # BM25 算法实现（全文检索，基于词频 TF-IDF）
+
+# ---- 混合检索：BM25 关键词检索 ----
+rank-bm25>=0.2          # BM25 算法实现（全文检索，基于词频 TF-IDF）

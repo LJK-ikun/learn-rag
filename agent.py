@@ -40,10 +40,10 @@ SYSTEM_PROMPT = """你是一个基于私人笔记回答问题的助手。
 4. 用中文回答，简洁、直接，不要客套话。"""
 
 
-def build_agent(store):
+def build_agent(vector_store, bm25, chunks):
     """建一个带记忆的 agent：塞好模型 + 工具 + 系统提示 + checkpointer。"""
     sources = [f.name for f in loader.find_markdown_files()]
-    tools = build_tools(store, sources)
+    tools = build_tools(vector_store, bm25, chunks, sources)
     return create_agent(
         get_llm(),
         tools,
