@@ -7,6 +7,7 @@
 这是一个用于个人面试笔记的 RAG（检索增强生成）问答系统。通过混合检索技术和 Agent 架构，能够准确回答技术问题并标注引用来源，支持上下文追问。
 
 **核心价值：**
+
 - 解决"笔记越来越多，找不到想要的知识点"的痛点
 - 通过混合检索提升召回率（覆盖语义理解 + 精确关键词匹配）
 - Agent 架构让系统能自主决策何时检索、如何组织答案
@@ -14,16 +15,19 @@
 ## 核心特性
 
 ### 1. 混合检索架构
+
 - **向量检索**：基于语义理解，能匹配"同义改写"（如"图结构快不快" → "HNSW 查询性能"）
 - **BM25 关键词检索**：精确匹配术语（如用户问"BM25"时不会漏掉关键文档）
 - **RRF 融合**：两路检索结果按排名倒数加权融合，在两路都排前面的文档得分更高
 
 ### 2. Agent 驱动 + 多轮记忆
+
 - **ReAct 循环**：模型自主决策何时调用 `search_notes` 或 `list_notes` 工具
 - **多轮记忆**：基于 LangGraph InMemorySaver，支持上下文追问（"HNSW 是什么" → "它的参数怎么调"）
 - **引用标注**：每条答案自动标注来源文件，可追溯
 
 ### 3. 持久化 + 增量更新
+
 - **文件级指纹**：每个文件独立计算哈希，精确检测变化
 - **增量更新**：修改 1 个文件只重建该文件的 chunk，节省 94% 向量化成本
 - **效果**：首次构建 ~54s，缓存命中 ~7s，增量更新 ~3s（单文件）
@@ -31,14 +35,14 @@
 
 ## 技术栈
 
-| 模块       | 技术选型                                    | 说明                                   |
-| ---------- | ------------------------------------------- | -------------------------------------- |
-| 向量化     | Alibaba DashScope `text-embedding-v4`       | 1024 维，中文友好                      |
-| 对话模型   | DeepSeek `deepseek-v4-flash`                | 性价比高，推理速度快                   |
-| 向量库     | Chroma                                      | 本地 sqlite，单机嵌入式部署            |
-| 关键词检索 | BM25 (rank-bm25)                            | 经典 TF-IDF 扩展，适合中文分词         |
-| Agent 框架 | LangChain + LangGraph                       | ReAct 循环 + 多轮记忆                  |
-| 语料切分   | 自定义 Markdown 切分器                      | 按标题层级切分 + 代码块保护 + 段落二次切分 |
+| 模块       | 技术选型                               | 说明                                       |
+| ---------- | -------------------------------------- | ------------------------------------------ |
+| 向量化     | Alibaba DashScope`text-embedding-v4` | 1024 维，中文友好                          |
+| 对话模型   | DeepSeek`deepseek-v4-flash`          | 性价比高，推理速度快                       |
+| 向量库     | Chroma                                 | 本地 sqlite，单机嵌入式部署                |
+| 关键词检索 | BM25 (rank-bm25)                       | 经典 TF-IDF 扩展，适合中文分词             |
+| Agent 框架 | LangChain + LangGraph                  | ReAct 循环 + 多轮记忆                      |
+| 语料切分   | 自定义 Markdown 切分器                 | 按标题层级切分 + 代码块保护 + 段落二次切分 |
 
 **依赖清单**：见 `requirements.txt`（约 50MB，主要是 chromadb）
 
@@ -68,6 +72,7 @@ cp .env.example .env
 ```
 
 编辑 `.env`：
+
 ```ini
 # 向量化（阿里 DashScope）
 DASHSCOPE_API_KEY=sk-xxxxx
@@ -123,26 +128,28 @@ rag-learning/
 
 ### 核心模块说明
 
-| 文件          | 职责                                                         | 核心函数/类                           |
-| ------------- | ------------------------------------------------------------ | ------------------------------------- |
-| `config.py`   | 配置中心：API Key、模型名、切分参数、检索参数                | `EMBEDDING_MODEL`, `CHAT_MODEL`, ...  |
-| `loader.py`   | 加载笔记：递归读取 `INTERVIEW_DIR` 下的 .md 文件             | `load_documents()`                    |
-| `chunker.py`  | 切分策略：按 Markdown 标题切分 + 代码块保护 + 段落二次切分   | `chunk_documents()`                   |
-| `embedder.py` | 向量化封装：包装 DashScope embedding API                     | `get_embeddings()`                    |
-| `store.py`    | 向量库核心：构建/加载/检索/指纹机制/混合检索                 | `load_or_build_store()`, `search()`   |
-| `tools.py`    | Agent 工具：`search_notes`（检索）+ `list_notes`（列清单）   | `build_tools()`                       |
-| `agent.py`    | Agent 构建：ReAct 循环 + InMemorySaver 多轮记忆              | `build_agent()`, `ask()`              |
-| `main.py`     | 交互式入口：while 循环 + 同一 thread_id 保持会话连续性       | `main()`                              |
+| 文件            | 职责                                                           | 核心函数/类                              |
+| --------------- | -------------------------------------------------------------- | ---------------------------------------- |
+| `config.py`   | 配置中心：API Key、模型名、切分参数、检索参数                  | `EMBEDDING_MODEL`, `CHAT_MODEL`, ... |
+| `loader.py`   | 加载笔记：递归读取`INTERVIEW_DIR` 下的 .md 文件              | `load_documents()`                     |
+| `chunker.py`  | 切分策略：按 Markdown 标题切分 + 代码块保护 + 段落二次切分     | `chunk_documents()`                    |
+| `embedder.py` | 向量化封装：包装 DashScope embedding API                       | `get_embeddings()`                     |
+| `store.py`    | 向量库核心：构建/加载/检索/指纹机制/混合检索                   | `load_or_build_store()`, `search()`  |
+| `tools.py`    | Agent 工具：`search_notes`（检索）+ `list_notes`（列清单） | `build_tools()`                        |
+| `agent.py`    | Agent 构建：ReAct 循环 + InMemorySaver 多轮记忆                | `build_agent()`, `ask()`             |
+| `main.py`     | 交互式入口：while 循环 + 同一 thread_id 保持会话连续性         | `main()`                               |
 
 ## 技术亮点
 
 ### 1. 混合检索 + RRF 融合
 
 **问题背景**：
+
 - 纯向量检索：擅长语义，但对精确术语不敏感（问"BM25"可能召回一堆"检索算法"但漏掉真正提到 BM25 的段落）
 - 纯关键词检索：擅长精确匹配，但不懂同义词改写
 
 **解决方案**：
+
 ```python
 # 两阶段检索
 semantic_results = vector_store.similarity_search(query, k=20)  # 语义召回 20 个
@@ -152,6 +159,7 @@ return fused[:5]                                                # 取前 5 个
 ```
 
 **RRF（Reciprocal Rank Fusion）**：
+
 - 对每个文档，RRF 分数 = Σ 1/(k + rank_in_each_list)
 - 在两路都排前面的文档 → RRF 分数高
 - 只在单路出现的文档 → 也保留但分数低
@@ -161,6 +169,7 @@ return fused[:5]                                                # 取前 5 个
 **问题**：843 个 chunk 全量向量化耗时 ~54s，但 90% 的情况下语料并未改变。
 
 **解决方案**：
+
 ```python
 def compute_fingerprint(chunks):
     hasher = hashlib.sha256()
@@ -182,6 +191,7 @@ else:
 ### 3. Agent 架构 + 多轮记忆
 
 **Agent 决策示例**：
+
 ```
 用户问："你有哪些笔记"
   → Agent 选择调用 list_notes()（不需要检索）
@@ -192,6 +202,7 @@ else:
 ```
 
 **多轮记忆**：
+
 ```python
 # agent.py
 checkpointer = InMemorySaver()  # 按 thread_id 存历史
@@ -235,7 +246,7 @@ AI: BM25 是基于 TF-IDF 的改进算法，核心思想：
     2. 文档长度归一化：长文档不会仅因为长就得高分（用 b 参数控制）
     公式：score = IDF(qi) * (f(qi) * (k1+1)) / (f(qi) + k1 * (1-b + b*|D|/avgdl))
     [来源: 12-补充-检索与RAG.md]
-    
+  
     ↑ 这种问题因为精确提到"BM25"这个术语，关键词检索会起关键作用
 ```
 
@@ -244,16 +255,17 @@ AI: BM25 是基于 TF-IDF 的改进算法，核心思想：
 ### 当前局限
 
 1. **历史不持久化**：`InMemorySaver` 存在进程内存，重启后对话历史丢失
+
    - 改进方向：换成 `SqliteSaver` 或 `PostgresSaver`
-
 2. **无历史长度控制**：对话轮数多了会导致每次请求 token 数线性增长
-   - 改进方向：滑动窗口 / 历史摘要压缩
 
+   - 改进方向：滑动窗口 / 历史摘要压缩
 3. **增量更新缺失**：改一个字也要全量重建索引
+
    - 当前规模（843 块）重建 1 分钟，可接受
    - 规模大了需要增量更新策略
-
 4. **缺少评估体系**：没有量化指标衡量检索质量
+
    - 改进方向：引入 RAGAS 或自定义评估集
 
 ### 后续规划
@@ -278,16 +290,16 @@ AI: BM25 是基于 TF-IDF 的改进算法，核心思想：
 
 ## 常见问题
 
-**Q: 为什么向量化和对话用两家不同的服务？**  
+**Q: 为什么向量化和对话用两家不同的服务？**
 A: DeepSeek 没有 embedding 接口，只有 chat 接口。embedding 和 chat 本来就是两个独立能力，各挑最优即可。
 
-**Q: 为什么不用 LlamaIndex / LangChain 的内置 RAG pipeline？**  
+**Q: 为什么不用 LlamaIndex / LangChain 的内置 RAG pipeline？**
 A: 为了学习目的，手写了完整的检索链路（loader → chunker → embedder → store → agent），能更清楚理解每个环节的细节和权衡。
 
-**Q: 843 个 chunk 是什么规模？**  
+**Q: 843 个 chunk 是什么规模？**
 A: 对应 20 个 Markdown 文件（我的面试笔记），约 20 万字。切分策略是按 Markdown 标题层级切分，每块最多 800 字。
 
-**Q: 能处理多大规模的语料？**  
+**Q: 能处理多大规模的语料？**
 A: Chroma + HNSW 索引理论上能撑到几十万到百万级 chunk。当前规模（千级）完全不需要考虑性能优化。
 
 ## 许可证

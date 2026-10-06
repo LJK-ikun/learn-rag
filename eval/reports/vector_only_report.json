@@ -1,0 +1,268 @@
+{
+  "summary": {
+    "method": "Vector Only (纯向量)",
+    "total_questions": 15,
+    "avg_hit_rate": 0.8667,
+    "avg_mrr": 0.7333,
+    "avg_precision": 0.6667,
+    "avg_recall": 3.1667
+  },
+  "details": [
+    {
+      "question": "HNSW 是什么",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md"
+      ],
+      "retrieved_docs": [
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 5.0
+    },
+    {
+      "question": "BM25 算法的核心思想是什么",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md"
+      ],
+      "retrieved_docs": [
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 5.0
+    },
+    {
+      "question": "如何调整 HNSW 的参数",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md"
+      ],
+      "retrieved_docs": [
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 5.0
+    },
+    {
+      "question": "什么是 RRF 融合",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md"
+      ],
+      "retrieved_docs": [
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "16-面试讲法与速查.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 0.8,
+      "recall": 4.0
+    },
+    {
+      "question": "向量检索和关键词检索各有什么优缺点",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md"
+      ],
+      "retrieved_docs": [
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 5.0
+    },
+    {
+      "question": "ReAct 是什么",
+      "ground_truth_docs": [
+        "03-AgentLoop.md"
+      ],
+      "retrieved_docs": [
+        "18-Agent领域八股.md",
+        "17-模拟面试60题.md",
+        "20-Agent基础问答.md",
+        "03-AgentLoop.md",
+        "16-面试讲法与速查.md"
+      ],
+      "hit": true,
+      "mrr": 0.25,
+      "precision": 0.2,
+      "recall": 1.0
+    },
+    {
+      "question": "Agent 中的工具系统怎么设计",
+      "ground_truth_docs": [
+        "02-工具系统.md"
+      ],
+      "retrieved_docs": [
+        "20-Agent基础问答.md",
+        "10-子Agent.md",
+        "16-面试讲法与速查.md",
+        "10-子Agent.md",
+        "20-Agent基础问答.md"
+      ],
+      "hit": false,
+      "mrr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    {
+      "question": "什么是 Prompt 缓存",
+      "ground_truth_docs": [
+        "04-指令工程与Prompt缓存.md"
+      ],
+      "retrieved_docs": [
+        "04-指令工程与Prompt缓存.md",
+        "04-指令工程与Prompt缓存.md",
+        "16-面试讲法与速查.md",
+        "17-模拟面试60题.md",
+        "04-指令工程与Prompt缓存.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 0.6,
+      "recall": 3.0
+    },
+    {
+      "question": "MCP 协议是什么",
+      "ground_truth_docs": [
+        "06-MCP客户端.md"
+      ],
+      "retrieved_docs": [
+        "17-模拟面试60题.md",
+        "18-Agent领域八股.md",
+        "18-Agent领域八股.md",
+        "06-MCP客户端.md",
+        "06-MCP客户端.md"
+      ],
+      "hit": true,
+      "mrr": 0.25,
+      "precision": 0.4,
+      "recall": 2.0
+    },
+    {
+      "question": "Agent 如何管理上下文窗口",
+      "ground_truth_docs": [
+        "07-上下文管理.md"
+      ],
+      "retrieved_docs": [
+        "15-补充-通用基础八股.md",
+        "07-上下文管理.md",
+        "07-上下文管理.md",
+        "07-上下文管理.md",
+        "07-上下文管理.md"
+      ],
+      "hit": true,
+      "mrr": 0.5,
+      "precision": 0.8,
+      "recall": 4.0
+    },
+    {
+      "question": "记忆系统有哪些类型",
+      "ground_truth_docs": [
+        "08-记忆系统.md"
+      ],
+      "retrieved_docs": [
+        "08-记忆系统.md",
+        "20-Agent基础问答.md",
+        "18-Agent领域八股.md",
+        "08-记忆系统.md",
+        "18-Agent领域八股.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 0.4,
+      "recall": 2.0
+    },
+    {
+      "question": "什么是 Worktree 隔离",
+      "ground_truth_docs": [
+        "11-Worktree隔离.md"
+      ],
+      "retrieved_docs": [
+        "11-Worktree隔离.md",
+        "11-Worktree隔离.md",
+        "11-Worktree隔离.md",
+        "11-Worktree隔离.md",
+        "11-Worktree隔离.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 5.0
+    },
+    {
+      "question": "如何评估 Agent 的性能",
+      "ground_truth_docs": [
+        "13-补充-Agent评估.md"
+      ],
+      "retrieved_docs": [
+        "13-补充-Agent评估.md",
+        "13-补充-Agent评估.md",
+        "13-补充-Agent评估.md",
+        "13-补充-Agent评估.md",
+        "17-模拟面试60题.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 0.8,
+      "recall": 4.0
+    },
+    {
+      "question": "RAG 系统的评估指标有哪些",
+      "ground_truth_docs": [
+        "12-补充-检索与RAG.md",
+        "13-补充-Agent评估.md"
+      ],
+      "retrieved_docs": [
+        "13-补充-Agent评估.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "12-补充-检索与RAG.md",
+        "13-补充-Agent评估.md"
+      ],
+      "hit": true,
+      "mrr": 1.0,
+      "precision": 1.0,
+      "recall": 2.5
+    },
+    {
+      "question": "子 Agent 的使用场景是什么",
+      "ground_truth_docs": [
+        "10-子Agent.md"
+      ],
+      "retrieved_docs": [
+        "18-Agent领域八股.md",
+        "20-Agent基础问答.md",
+        "20-Agent基础问答.md",
+        "16-面试讲法与速查.md",
+        "13-补充-Agent评估.md"
+      ],
+      "hit": false,
+      "mrr": 0.0,
+      "precision": 0.0,
+      "recall": 0.0
+    }
+  ]
+}

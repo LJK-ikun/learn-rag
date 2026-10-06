@@ -1,0 +1,35 @@
+{
+  "comparison": {
+    "vector_only": {
+      "method": "Vector Only (纯向量)",
+      "total_questions": 15,
+      "avg_hit_rate": 0.8667,
+      "avg_mrr": 0.7333,
+      "avg_precision": 0.6667,
+      "avg_recall": 3.1667
+    },
+    "bm25_only": {
+      "method": "BM25 Only (纯关键词)",
+      "total_questions": 15,
+      "avg_hit_rate": 0.7333,
+      "avg_mrr": 0.6389,
+      "avg_precision": 0.5067,
+      "avg_recall": 2.4333
+    },
+    "hybrid": {
+      "method": "Hybrid (混合检索: Vector + BM25 + RRF)",
+      "total_questions": 15,
+      "avg_hit_rate": 0.9333,
+      "avg_mrr": 0.7389,
+      "avg_precision": 0.6667,
+      "avg_recall": 3.2
+    }
+  },
+  "config": {
+    "top_k": 5,
+    "fetch_k": 20,
+    "embedding_model": "text-embedding-v4",
+    "total_chunks": 843,
+    "total_questions": 15
+  }
+}

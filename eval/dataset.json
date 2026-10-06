@@ -1,0 +1,62 @@
+[
+  {
+    "question": "HNSW 是什么",
+    "ground_truth_docs": ["12-补充-检索与RAG.md"]
+  },
+  {
+    "question": "BM25 算法的核心思想是什么",
+    "ground_truth_docs": ["12-补充-检索与RAG.md"]
+  },
+  {
+    "question": "如何调整 HNSW 的参数",
+    "ground_truth_docs": ["12-补充-检索与RAG.md"]
+  },
+  {
+    "question": "什么是 RRF 融合",
+    "ground_truth_docs": ["12-补充-检索与RAG.md"]
+  },
+  {
+    "question": "向量检索和关键词检索各有什么优缺点",
+    "ground_truth_docs": ["12-补充-检索与RAG.md"]
+  },
+  {
+    "question": "ReAct 是什么",
+    "ground_truth_docs": ["03-AgentLoop.md"]
+  },
+  {
+    "question": "Agent 中的工具系统怎么设计",
+    "ground_truth_docs": ["02-工具系统.md"]
+  },
+  {
+    "question": "什么是 Prompt 缓存",
+    "ground_truth_docs": ["04-指令工程与Prompt缓存.md"]
+  },
+  {
+    "question": "MCP 协议是什么",
+    "ground_truth_docs": ["06-MCP客户端.md"]
+  },
+  {
+    "question": "Agent 如何管理上下文窗口",
+    "ground_truth_docs": ["07-上下文管理.md"]
+  },
+  {
+    "question": "记忆系统有哪些类型",
+    "ground_truth_docs": ["08-记忆系统.md"]
+  },
+  {
+    "question": "什么是 Worktree 隔离",
+    "ground_truth_docs": ["11-Worktree隔离.md"]
+  },
+  {
+    "question": "如何评估 Agent 的性能",
+    "ground_truth_docs": ["13-补充-Agent评估.md"]
+  },
+  {
+    "question": "RAG 系统的评估指标有哪些",
+    "ground_truth_docs": ["12-补充-检索与RAG.md", "13-补充-Agent评估.md"]
+  },
+  {
+    "question": "子 Agent 的使用场景是什么",
+    "ground_truth_docs": ["10-子Agent.md"]
+  }
+]
